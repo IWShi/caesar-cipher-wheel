@@ -1,0 +1,342 @@
+<html>
+  <!--Cipher program (for AP CSP Create Task)
+      May 2021-->
+
+  <head>
+    <style>
+      #shiftVisual {
+        position: relative;
+        height: 500;
+      }
+
+      #outerDial {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      #innerDial {
+        position: absolute;
+        top: 65;
+        left: 65;
+      }
+
+      #key {
+        position: absolute;
+        top: 130;
+        left: 130;
+      }
+
+      table {
+        box-sizing: border-box;
+        border-collapse: collapse;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        table-layout: fixed;
+      }
+
+      td {
+        box-sizing: border-box;
+        border-collapse: collapse;
+        text-align: top;
+        vertical-align: top;
+      }
+
+      button {
+        padding: 5px 10px;
+        box-sizing: border-box;
+      }
+
+      #encodeButton {
+        margin-right: 5px;
+        border: 2px solid black;
+        font-weight: bold;
+        background-color: lightcoral;
+      }
+
+      #decodeButton {
+        opacity: 0.6;
+        border: 2px solid white;
+        background-color: lightskyblue;
+      }
+    </style>
+
+    <script>
+      function runShift(shift) { //rotates the Caesar cipher wheel and encrypts/decrypts the user-inputted message
+        let direction;
+        let originalText = document.getElementById("original").innerHTML;
+
+        if (originalText == "Plaintext Message:") {
+          direction = "encode";
+        } else {
+          direction = "decode";
+        }
+
+        rotateDial(shift);
+        shiftMessage(direction);
+      }
+
+      function changeCipher(direction) { //switches program to specified mode (either 'encode' or 'decode')
+        if (direction == "encode") {
+          document.getElementById("original").innerHTML = "Plaintext Message:";
+          document.getElementById("new").innerHTML = "Encoded Message:";
+          document.getElementById("instructions1").innerHTML = "<i>Enter your unencrypted message here.</i>";
+          document.getElementById("instructions2").innerHTML = "<i>Your encrypted message will appear here.</i>";
+          document.getElementById("mode").innerHTML = "Mode: ENCODE";
+
+          document.getElementById("encodeButton").style.opacity = 1;
+          document.getElementById("encodeButton").style.border = "2px solid black";
+          document.getElementById("encodeButton").style.fontWeight = "bold";
+
+          document.getElementById("decodeButton").style.opacity = 0.6;
+          document.getElementById("decodeButton").style.border = "2px solid white";
+          document.getElementById("decodeButton").style.fontWeight = "normal";
+        } else {
+          document.getElementById("original").innerHTML = "Encoded Message:";
+          document.getElementById("new").innerHTML = "Plaintext Message:";
+          document.getElementById("instructions1").innerHTML = "<i>Enter your encrypted message here.</i>";
+          document.getElementById("instructions2").innerHTML = "<i>Your decrypted message will appear here.</i>";
+          document.getElementById("mode").innerHTML = "Mode: DECODE";
+          
+          document.getElementById("encodeButton").style.opacity = 0.6;
+          document.getElementById("encodeButton").style.border = "2px solid white";
+          document.getElementById("encodeButton").style.fontWeight = "normal";
+
+          document.getElementById("decodeButton").style.opacity = 1;
+          document.getElementById("decodeButton").style.border = "2px solid black";
+          document.getElementById("decodeButton").style.fontWeight = "bold";
+        }
+
+        runShift(document.getElementById("shift").value);
+      }
+
+      function shiftMessage(direction) { //changes user-inputted message in specified manner (either encrypts or decrypts)
+        let plaintext = document.getElementById("inputText").value;
+        let shift = Number(document.getElementById("shift").value);
+        let ciphertext = [];
+        let letter;
+        let index;
+
+        plaintext = plaintext.split("");
+
+        for (let i = 0; i < plaintext.length; i++) {
+          letter = plaintext[i].toLowerCase();
+          if (alphabet.indexOf(letter) != -1) {
+            if (direction == "encode") {
+              index = (alphabet.indexOf(letter) + shift) % 26;
+            } else if (direction == "decode") {
+              index = (alphabet.indexOf(letter) - shift) % 26;
+              if (index < 0) {
+                index += 26;
+              }
+            }
+            
+            if (plaintext[i] == plaintext[i].toLowerCase()) {
+              ciphertext[i] = alphabet[index];
+            } else {
+              ciphertext[i] = alphabet[index].toUpperCase();
+            }
+          } else {
+            ciphertext[i] = plaintext[i];
+          }
+        }
+
+        ciphertext = ciphertext.join("");
+        document.getElementById("outputText").value = ciphertext;
+      }
+
+      function drawOuterDial() { //draws outer ring of Caesar cipher wheel
+        let theta;
+        let x;
+        let y;
+
+        outerDialDraw.beginPath();
+        outerDialDraw.arc(250, 250, 250, 0, 2 * Math.PI);
+        outerDialDraw.stroke();
+        outerDialDraw.closePath();
+
+        for (let i = 0; i < 26; i++) {
+          theta = i * ((2 * Math.PI) / 26);
+          x = 250 * Math.cos(theta);
+          y = 250 * Math.sin(theta);
+          
+          outerDialDraw.beginPath();
+          outerDialDraw.moveTo(250, 250);
+          outerDialDraw.lineTo(250 - x, 250 - y);
+          outerDialDraw.stroke();
+          outerDialDraw.closePath();
+        }
+
+        outerDialDraw.font = "50px monospace";
+        outerDialDraw.textAlign = "center";
+        for (let i = 0; i < 26; i++) {
+          theta = (Math.PI / 2) - (i * Math.PI / 13)
+          outerDialDraw.save();
+          outerDialDraw.translate(250 + (200 * Math.cos(theta)), 250 - (200 * Math.sin(theta)));
+          outerDialDraw.rotate(i * Math.PI / 13);
+          outerDialDraw.fillText(alphabet[i].toUpperCase(), 0, 0);
+          outerDialDraw.restore();
+        }
+
+        outerDialDraw.fillStyle = "white";
+        outerDialDraw.beginPath();
+        outerDialDraw.arc(250, 250, 185, 0, 2 * Math.PI);
+        outerDialDraw.stroke();
+        outerDialDraw.fill();
+        outerDialDraw.closePath();
+      }
+      
+      function drawInnerDial() { //draws inner ring of Caesar cipher wheel
+        let theta;
+        let x;
+        let y;
+
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(185, 185, 185, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.closePath();
+
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(185, 185, 120, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.closePath();
+
+        for (let i = 0; i < 26; i++) {
+          theta = i * ((2 * Math.PI) / 26);
+          x = 185 * Math.cos(theta);
+          y = 185 * Math.sin(theta);
+          
+          innerDialDraw.beginPath();
+          innerDialDraw.moveTo(185, 185);
+          innerDialDraw.lineTo(185 - x, 185 - y);
+          innerDialDraw.stroke();
+          innerDialDraw.closePath();
+        }
+
+        innerDialDraw.font = "50px monospace";
+        innerDialDraw.textAlign = "center";
+        for (let i = 0; i < 26; i++) {
+          theta = (Math.PI / 2) - (i * Math.PI / 13)
+          innerDialDraw.save();
+          innerDialDraw.translate(185 + (135 * Math.cos(theta)), 185 - (135 * Math.sin(theta)));
+          innerDialDraw.rotate(i * Math.PI / 13);
+          innerDialDraw.fillText(alphabet[i], 0, 0);
+          innerDialDraw.restore();
+        }
+
+        innerDialDraw.fillStyle = "white";
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(185, 185, 120, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.fill();
+        innerDialDraw.closePath();
+      }
+    
+      function drawKey() { //adds text to the center of the Caesar cipher wheel
+        keyDraw.font = "25px monospace";
+        keyDraw.textAlign = "center";
+        keyDraw.fillText("PLAINTEXT", 120, 110);
+        keyDraw.fillText("ciphertext", 120, 140);
+      }
+
+      function drawRotatedDial() { //redraws inner ring of Caesar cipher wheel after its canvas has been rotated 
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(0, 0, 185, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.closePath();
+
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(0, 0, 120, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.closePath();
+
+        for (let i = 0; i < 26; i++) {
+          theta = i * ((2 * Math.PI) / 26);
+          x = 185 * Math.cos(theta);
+          y = 185 * Math.sin(theta);
+          
+          innerDialDraw.beginPath();
+          innerDialDraw.moveTo(0, 0);
+          innerDialDraw.lineTo(-x, -y);
+          innerDialDraw.stroke();
+          innerDialDraw.closePath();
+        }
+
+        innerDialDraw.font = "50px monospace";
+        innerDialDraw.fillStyle = "black";
+        innerDialDraw.textAlign = "center";
+        for (let i = 0; i < 26; i++) {
+          theta = (Math.PI / 2) - (i * Math.PI / 13)
+          innerDialDraw.save();
+          innerDialDraw.translate(135 * Math.cos(theta), -135 * Math.sin(theta));
+          innerDialDraw.rotate(i * Math.PI / 13);
+          innerDialDraw.fillText(alphabet[i], 0, 0);
+          innerDialDraw.restore();
+        }
+
+        innerDialDraw.fillStyle = "white";
+        innerDialDraw.beginPath();
+        innerDialDraw.arc(0, 0, 120, 0, 2 * Math.PI);
+        innerDialDraw.stroke();
+        innerDialDraw.fill();
+        innerDialDraw.closePath();
+      }
+
+      function rotateDial(shift) { //rotates the inner ring of the Caesar cipher wheel by specified amount
+        let theta = Math.PI / 13;
+
+        innerDialDraw.clearRect(0, 0, 370, 370);
+
+        innerDialDraw.save();
+        innerDialDraw.translate(185, 185);
+        innerDialDraw.rotate(-shift * Math.PI / 13);
+        drawRotatedDial();
+        innerDialDraw.restore();
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1 id="mode" style="margin-bottom: 0;">Mode: ENCODE</h1>
+    <button id="encodeButton" onclick="changeCipher('encode')">ENCODE</button>
+    <button id="decodeButton" onclick="changeCipher('decode')">DECODE</button><br><br><br>
+    <table>
+      <tr>
+        <td>
+          <p id="original" style="font-weight: bold; margin-bottom: 0px;">Plaintext Message:</p>
+          <p id="instructions1" style="margin-top: 0px;"><i>Enter your unencrypted message here.</i></p>
+          <input type="text" id="inputText" size="50px" onchange="runShift(shift.value)"></input>
+        </td>
+        <td>
+          <p id="new" style="font-weight: bold; margin-bottom: 0px;">Encoded Message:</p>
+          <p id="instructions2" style="margin-top: 0px;"><i>Your encrypted message will appear here.</i></p>
+          <input type="text" id="outputText" size="50px" readonly="true"></input>
+        </td>
+      </tr>
+    </table><br>
+    <p>Size of Caesar cipher shift:</p>
+    <input type="number" id="shift" min="0" max="26" placeholder="0" onchange="runShift(this.value)"></input><br>
+    <div id="shiftVisual">
+      <canvas id="outerDial" width="500" height="500"></canvas>
+      <canvas id="innerDial" width="370" height="370"></canvas>
+      <canvas id="key" width="240" height="240"></canvas>
+    </div>
+
+    <script>
+      let alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
+                      "s", "t", "u", "v", "w", "x", "y", "z"];
+
+      let canvas = document.getElementById("outerDial");
+      let outerDialDraw = canvas.getContext("2d");
+      let canvas2 = document.getElementById("innerDial");
+      let innerDialDraw = canvas2.getContext("2d");
+      let canvas3 = document.getElementById("key");
+      let keyDraw = canvas3.getContext("2d");
+
+      drawOuterDial();
+      drawInnerDial();
+      drawKey();
+    </script>
+  </body>
+</html>
